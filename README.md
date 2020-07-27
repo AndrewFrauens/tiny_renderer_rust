@@ -1,4 +1,4 @@
-# tiny_renderer_rust
+# tiny renderer rust
 
 
 Trying to follow TinyRenderer Guide, but in Rust.  Used Jon Grimes' pocket-renderer project's early commits in ordeer to kick off being able to open and save image files
