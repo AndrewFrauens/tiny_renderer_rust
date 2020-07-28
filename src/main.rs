@@ -4,50 +4,42 @@ extern crate image;
 //use std::path::Path;
 //use std::vec::Vec;
 
-use image::ImageBuffer;
+//use image::ImageBuffer;
 //use image::Pixel;
 
+const _WHITE: image::Rgb<u8> = image::Rgb([255, 255, 255]);
+const _BLACK: image::Rgb<u8> = image::Rgb([0, 0, 0]);
 
-const WHITE:[u8; 3]   = [255, 255, 255];
-const BLACK:[u8; 3] = [  0,   0,   0];
+const RED: image::Rgb<u8> = image::Rgb([255, 0, 0]);
+const _GREEN: image::Rgb<u8> = image::Rgb([0, 255, 0]);
+const _BLUE: image::Rgb<u8> = image::Rgb([0, 0, 255]);
 
-const RED:[u8; 3]     = [255,   0,   0];
-const GREEN:[u8; 3] = [  0, 255,   0];
-const BLUE:[u8; 3]  = [  0,   0, 255];
+const _YELLOW: image::Rgb<u8> = image::Rgb([255, 255, 0]);
+const _MAGENTA: image::Rgb<u8> = image::Rgb([255, 0, 255]);
+const _CYAN: image::Rgb<u8> = image::Rgb([0, 255, 255]);
 
-const YELLOW:[u8; 3]  = [255, 255,   0];
-const CYAN:[u8; 3]    = [  0, 255, 255];
-const MAGENTA:[u8; 3] = [255,   0, 255];
-
+fn draw_line<T: image::GenericImage>(
+    x0: &u32,
+    y0: &u32,
+    x1: &u32,
+    y1: &u32,
+    img: &mut T,
+    color: T::Pixel,
+) {
+    let steps = 10; //actually 1 more step than this
+    for t in 0..=steps {
+        let x = x0 + (((x1 - x0) as f32 * (t as f32) / (steps as f32)) as u32);
+        let y = y0 + (((y1 - y0) as f32 * (t as f32) / (steps as f32)) as u32);
+        img.put_pixel(x, y, color);
+    }
+}
 
 fn main() {
-    let mut img = ImageBuffer::new(100,100);
+    let mut img = image::ImageBuffer::new(100, 100);
 
-    img.put_pixel( 10, 10, image::Rgb(WHITE));
-    img.put_pixel( 20, 20, image::Rgb(RED));
-    img.put_pixel( 30, 30, image::Rgb(GREEN));
-    img.put_pixel( 40, 40, image::Rgb(BLUE));
-    img.put_pixel( 50, 50, image::Rgb(YELLOW));
-    img.put_pixel( 60, 60, image::Rgb(CYAN));
-    img.put_pixel( 70, 70, image::Rgb(MAGENTA));
+    draw_line(&10, &10, &60, &25, &mut img, RED);
 
-    //make white square to test black
-    img.put_pixel( 81, 80, image::Rgb(WHITE));
-    img.put_pixel( 80, 80, image::Rgb(WHITE));
-    img.put_pixel( 82, 80, image::Rgb(WHITE));
+    let img = image::imageops::flip_vertical(&img);
 
-    img.put_pixel( 81, 81, image::Rgb(WHITE));
-    img.put_pixel( 80, 81, image::Rgb(WHITE));
-    img.put_pixel( 82, 81, image::Rgb(WHITE));
-
-    img.put_pixel( 81, 82, image::Rgb(WHITE));
-    img.put_pixel( 80, 82, image::Rgb(WHITE));
-    img.put_pixel( 82, 82, image::Rgb(WHITE));
-
-    img.put_pixel( 81, 81, image::Rgb(BLACK));
-
-
-
-
-    img.save("./output/pixel2.tga").unwrap();
+    img.save("./output/pixel5.tga").unwrap();
 }
