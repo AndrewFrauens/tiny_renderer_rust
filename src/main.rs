@@ -1,4 +1,5 @@
 extern crate image;
+extern crate obj;
 
 // using all the stuff from the tinyrenderer... since the whole point of what I'm doing is to
 // build that file up.
@@ -8,6 +9,11 @@ use crate::tinyrenderer::*;
 
 
 fn main() {
+    
+    let model = obj::Obj::load("input/obj/african_head.obj");
+
+
+
     let mut img = image::ImageBuffer::new(200, 200);
 
     draw_line(10, 10, 178, 25, &mut img, RED);
@@ -19,6 +25,6 @@ fn main() {
 
     let img = image::imageops::flip_vertical(&img);
 
-    img.save("./output/pixel9.tga").unwrap();
+    img.save("./output/pixel10.tga").unwrap();
 
 }
