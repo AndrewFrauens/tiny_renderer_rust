@@ -10,7 +10,7 @@ use crate::tinyrenderer::*;
 
 fn main() {
     
-    let model = obj::Obj::load("input/obj/african_head.obj");
+    let model = obj::Obj::load("input/obj/african_head.obj").unwrap();
 
 
 
