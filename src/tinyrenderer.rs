@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 extern crate image;
 
+use std::cmp;
+
 /// Tiny Renderer module
 /// Created following ssloy's guide
 
@@ -28,33 +30,72 @@ pub struct Triangle {
     pub pt2: Point,
 }
 
-pub fn draw_triangle(
-    tri: Triangle,
-    img: &mut image::RgbImage,
-    _color: image::Rgb<u8>,
-) {
-   let mut pt0 = tri.pt0; 
-   let mut pt1 = tri.pt1; 
-   let mut pt2 = tri.pt2; 
-    
-    if pt0.y > pt1.y {
-        let temp = pt0;
-        pt0 = pt1;
-        pt1 = temp;
-    };
-    if pt0.y > pt2.y {
-        let temp = pt0;
-        pt0 = pt2;
-        pt2 = temp;
-    };
-    if pt1.y > pt2.y {
-        let temp = pt1;
-        pt1 = pt2;
-        pt2 = temp;
-    };
-    draw_line(pt0.x, pt0.y, pt1.x, pt1.y, img, GREEN);
-    draw_line(pt1.x, pt1.y, pt2.x, pt2.y, img, GREEN);
-    draw_line(pt0.x, pt0.y, pt2.x, pt2.y, img, RED);
+pub fn barycentric(tri: Triangle, p: Point) -> [f32; 3] {
+    let determinant: i128 = (tri.pt1.y as i128 - tri.pt2.y as i128)
+        * (tri.pt0.x as i128 - tri.pt2.x as i128)
+        + (tri.pt2.x as i128 - tri.pt1.x as i128) * (tri.pt0.y as i128 - tri.pt2.y as i128);
+
+    if determinant == 0 {
+        panic!("try to divide by zero while finding barycentric coordinates");
+    }
+
+    let u: f32 = ((tri.pt1.y as i128 - tri.pt2.y as i128) * (p.x as i128 - tri.pt2.x as i128)
+        + (tri.pt2.x as i128 - tri.pt1.x as i128) * (p.y as i128 - tri.pt2.y as i128))
+        as f32
+        / (determinant) as f32;
+
+    let v: f32 = ((tri.pt2.y as i128 - tri.pt0.y as i128) * (p.x as i128 - tri.pt2.x as i128)
+        + (tri.pt0.x as i128 - tri.pt2.x as i128) * (p.y as i128 - tri.pt2.y as i128))
+        as f32
+        / (determinant) as f32;
+
+    let w = 1.0 - u - v;
+
+    [u, v, w]
+}
+
+pub fn pt_is_in_triangle(tri: Triangle, p: Point) -> bool {
+    let bary_coord = barycentric(tri, p);
+    //This will probably lead to errors at some point... but so will leaving the comparison as
+    //being to 0 exactly...
+    let tol = -0.000005;
+
+    // if any coord is less than 0, then pt is outside tri
+    let inside_truthyness: bool =
+        !(bary_coord[0] < tol || bary_coord[1] < tol || bary_coord[2] < tol);
+
+    inside_truthyness
+}
+
+/// Finds the max and min values to create bounding box
+pub fn get_bounding_box(tri: Triangle) -> [Point; 2] {
+    let x_max = cmp::max(tri.pt0.x, cmp::max(tri.pt1.x, tri.pt2.x));
+    let y_max = cmp::max(tri.pt0.y, cmp::max(tri.pt1.y, tri.pt2.y));
+
+    let x_min = cmp::min(tri.pt0.x, cmp::min(tri.pt1.x, tri.pt2.x));
+    let y_min = cmp::min(tri.pt0.y, cmp::min(tri.pt1.y, tri.pt2.y));
+
+    let pt_max = Point { x: x_max, y: y_max };
+    let pt_min = Point { x: x_min, y: y_min };
+
+    [pt_max, pt_min]
+}
+
+pub fn draw_triangle(tri: Triangle, img: &mut image::RgbImage, _color: image::Rgb<u8>) {
+    let bounding_box = get_bounding_box(tri);
+    /*println!(
+        "boundingbox: ({}, {}) ({}, {})",
+        bounding_box[0].x, bounding_box[0].y, bounding_box[1].x, bounding_box[1].y
+    );*/
+
+    for col in (bounding_box[1].x)..(bounding_box[0].x) {
+        for row in (bounding_box[1].y)..(bounding_box[0].y) {
+            //println!("row: {}, col: {}", row, col);
+            if pt_is_in_triangle(tri, Point { x: col, y: row }) {
+                img.put_pixel(col, row, _color);
+            }
+        }
+    }
 }
 
 pub fn draw_line(

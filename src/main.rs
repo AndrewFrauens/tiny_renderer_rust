@@ -14,9 +14,9 @@ fn main() {
 
     let mut img = image::RgbImage::new(200, 200);
 
-    let p1 = Point { x: 10, y: 15 };
-    let p2 = Point { x: 40, y: 150 };
-    let p3 = Point { x: 180, y: 34 };
+    let p1 = Point { x: 0, y: 0 };
+    let p2 = Point { x: 10, y: 0 };
+    let p3 = Point { x: 10, y: 10 };
 
     let t1 = Triangle {
         pt0: p1,
@@ -26,16 +26,16 @@ fn main() {
 
     draw_triangle(t1, &mut img, RED);
 
-    //let p1 = Point { x: 10, y: 15 };
-    //let p2 = Point { x: 40, y: 150 };
+    let p1 = Point { x: 10, y: 15 };
+    let p2 = Point { x: 40, y: 150 };
     let p4 = Point { x: 130, y: 94 };
     let t2 = Triangle {
         pt0: p1,
         pt1: p4,
-        pt2: p3,
+        pt2: p2,
     };
 
-    draw_triangle(t2, &mut img, RED);
+    draw_triangle(t2, &mut img, CYAN);
     /*
         draw_line(10, 10, 178, 25, &mut img, RED);
         draw_line(50, 78, 73, 9, &mut img, RED);
@@ -47,5 +47,5 @@ fn main() {
 
     let img = image::imageops::flip_vertical(&img);
 
-    img.save("./output/pixel11.tga").unwrap();
+    img.save("./output/pixel13.tga").unwrap();
 }
