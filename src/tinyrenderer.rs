@@ -15,13 +15,55 @@ pub const YELLOW: image::Rgb<u8> = image::Rgb([255, 255, 0]);
 pub const MAGENTA: image::Rgb<u8> = image::Rgb([255, 0, 255]);
 pub const CYAN: image::Rgb<u8> = image::Rgb([0, 255, 255]);
 
-pub fn draw_line<T: image::GenericImage>(
+#[derive(Clone, Copy)]
+pub struct Point {
+    pub x: u32,
+    pub y: u32,
+}
+
+#[derive(Clone, Copy)]
+pub struct Triangle {
+    pub pt0: Point,
+    pub pt1: Point,
+    pub pt2: Point,
+}
+
+pub fn draw_triangle(
+    tri: Triangle,
+    img: &mut image::RgbImage,
+    _color: image::Rgb<u8>,
+) {
+   let mut pt0 = tri.pt0; 
+   let mut pt1 = tri.pt1; 
+   let mut pt2 = tri.pt2; 
+    
+    if pt0.y > pt1.y {
+        let temp = pt0;
+        pt0 = pt1;
+        pt1 = temp;
+    };
+    if pt0.y > pt2.y {
+        let temp = pt0;
+        pt0 = pt2;
+        pt2 = temp;
+    };
+    if pt1.y > pt2.y {
+        let temp = pt1;
+        pt1 = pt2;
+        pt2 = temp;
+    };
+    draw_line(pt0.x, pt0.y, pt1.x, pt1.y, img, GREEN);
+    draw_line(pt1.x, pt1.y, pt2.x, pt2.y, img, GREEN);
+    draw_line(pt0.x, pt0.y, pt2.x, pt2.y, img, RED);
+}
+
+pub fn draw_line(
     mut x0: u32,
     mut y0: u32,
     mut x1: u32,
     mut y1: u32,
-    img: &mut T,
-    color: T::Pixel,
+    img: &mut image::RgbImage,
+    color: image::Rgb<u8>,
 ) {
     let dx: i64 = (x1 as i64 - x0 as i64).abs();
     let dy: i64 = (y1 as i64 - y0 as i64).abs();
