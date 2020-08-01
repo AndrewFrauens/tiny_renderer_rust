@@ -21,6 +21,17 @@ pub const CYAN: image::Rgb<u8> = image::Rgb([0, 255, 255]);
 pub struct Point {
     pub x: u32,
     pub y: u32,
+    pub z: u32,
+}
+impl Point {
+    pub fn new(in_coord: [u32; 3]) -> Self {
+        let me = Point {
+            x: in_coord[0],
+            y: in_coord[1],
+            z: in_coord[2],
+        };
+        me
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -30,6 +41,39 @@ pub struct Triangle {
     pub pt2: Point,
 }
 
+impl Triangle {
+    pub fn new(in_pts: [Point; 3]) -> Self {
+        let mut my_t = Triangle {
+            pt0: in_pts[0],
+            pt1: in_pts[1],
+            pt2: in_pts[2],
+        };
+        my_t
+    }
+    pub fn new_scale(in_pts: [[f32; 3]; 3], width: u32, height: u32) -> Self {
+        let pt_0 = Point::new([
+            ((in_pts[0][0] + 1.) * width as f32 / 2.) as u32,
+            ((in_pts[0][1] + 1.) * height as f32 / 2.) as u32,
+            in_pts[0][2] as u32,
+        ]);
+        let pt_1 = Point::new([
+            ((in_pts[1][0] + 1.) * width as f32 / 2.) as u32,
+            ((in_pts[1][1] + 1.) * height as f32 / 2.) as u32,
+            in_pts[1][2] as u32,
+        ]);
+        let pt_2 = Point::new([
+            ((in_pts[2][0] + 1.) * width as f32 / 2.) as u32,
+            ((in_pts[2][1] + 1.) * height as f32 / 2.) as u32,
+            in_pts[2][2] as u32,
+        ]);
+        let mut my_t = Triangle {
+            pt0: pt_0,
+            pt1: pt_1,
+            pt2: pt_2,
+        };
+        my_t
+    }
+}
 pub fn barycentric(tri: Triangle, p: Point) -> [f32; 3] {
     let determinant: i128 = (tri.pt1.y as i128 - tri.pt2.y as i128)
         * (tri.pt0.x as i128 - tri.pt2.x as i128)
@@ -75,23 +119,66 @@ pub fn get_bounding_box(tri: Triangle) -> [Point; 2] {
     let x_min = cmp::min(tri.pt0.x, cmp::min(tri.pt1.x, tri.pt2.x));
     let y_min = cmp::min(tri.pt0.y, cmp::min(tri.pt1.y, tri.pt2.y));
 
-    let pt_max = Point { x: x_max, y: y_max };
-    let pt_min = Point { x: x_min, y: y_min };
+    let pt_max = Point {
+        x: x_max,
+        y: y_max,
+        z: 0,
+    };
+    let pt_min = Point {
+        x: x_min,
+        y: y_min,
+        z: 0,
+    };
 
     [pt_max, pt_min]
 }
 
 pub fn draw_triangle(tri: Triangle, img: &mut image::RgbImage, _color: image::Rgb<u8>) {
-    let bounding_box = get_bounding_box(tri);
+    let mut bounding_box = get_bounding_box(tri);
     /*println!(
         "boundingbox: ({}, {}) ({}, {})",
         bounding_box[0].x, bounding_box[0].y, bounding_box[1].x, bounding_box[1].y
     );*/
 
+    //cull pixels past image size
+    if bounding_box[0].x > img.dimensions().0 {
+        bounding_box[0].x = img.dimensions().0 - 1;
+    }
+    if bounding_box[0].y > img.dimensions().1 {
+        bounding_box[0].y = img.dimensions().1 - 1;
+    }
+    if bounding_box[1].x > img.dimensions().0 {
+        bounding_box[1].x = img.dimensions().0 - 1;
+    }
+    if bounding_box[1].y > img.dimensions().1 {
+        bounding_box[1].y = img.dimensions().1 - 1;
+    }
+    /*
+    if bounding_box[0].x < 0 {
+        bounding_box[0].x=0;
+    }
+    if bounding_box[0].y < 0{
+        bounding_box[0].y=0;
+    }
+    if bounding_box[1].x < 0{
+        bounding_box[1].x=0;
+    }
+    if bounding_box[1].y < 0{
+        bounding_box[1].y=0;
+    }
+    */
+
     for col in (bounding_box[1].x)..(bounding_box[0].x) {
         for row in (bounding_box[1].y)..(bounding_box[0].y) {
             //println!("row: {}, col: {}", row, col);
-            if pt_is_in_triangle(tri, Point { x: col, y: row }) {
+            if pt_is_in_triangle(
+                tri,
+                Point {
+                    x: col,
+                    y: row,
+                    z: 0,
+                },
+            ) {
                 img.put_pixel(col, row, _color);
             }
         }
